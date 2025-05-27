@@ -3,7 +3,6 @@ package com.domain.ecommerce.models;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -22,14 +21,22 @@ public class Client implements UserDetails {
     private String email;
 
     @Column(nullable = false)
-    private String login;
-
-    public void setLogin(String login) {
-        this.login = new BCryptPasswordEncoder().encode(login);
-    }
+    private String password;
 
     @Column(nullable = false)
     private UserRole role;
+
+    public Client(String email, String password, UserRole role) {
+        this.email = email;
+        this.password = password;
+        this.role = role;
+    }
+
+    public Client() {}
+
+    public void setLogin(String password) {
+        this.password = new BCryptPasswordEncoder().encode(password);
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -40,7 +47,7 @@ public class Client implements UserDetails {
 
     @Override
     public String getPassword() {
-        return "";
+        return this.password;
     }
 
     @Override

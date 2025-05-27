@@ -1,0 +1,46 @@
+package com.domain.ecommerce.controllers;
+
+import com.domain.ecommerce.models.AuthenticationDTO;
+import com.domain.ecommerce.models.Client;
+import com.domain.ecommerce.models.RegisterDTO;
+import com.domain.ecommerce.repositories.ClientRepository;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/auth")
+public class AuthenticationController {
+
+    private final AuthenticationManager authenticationManager;
+    private final ClientRepository clientRepository;
+
+    AuthenticationController(AuthenticationManager authenticationManager, ClientRepository clientRepository) {
+        this.authenticationManager = authenticationManager;
+        this.clientRepository = clientRepository;
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity login(@RequestBody @Valid AuthenticationDTO authenticationDTO) {
+        var usernamePassword = new UsernamePasswordAuthenticationToken(authenticationDTO.email(),
+                authenticationDTO.password());
+        var auth = this.authenticationManager.authenticate(usernamePassword);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity register(@RequestBody @Valid RegisterDTO registerDTO) {
+        if(this.clientRepository.findByEmail(registerDTO.email()).isPresent()) return ResponseEntity.badRequest().build();
+
+        String encryptedLogin = new BCryptPasswordEncoder().encode(registerDTO.password());
+        Client newClient = new Client(registerDTO.email(), encryptedLogin, registerDTO.role());
+        this.clientRepository.save(newClient);
+        return ResponseEntity.ok().build();
+    }
+}

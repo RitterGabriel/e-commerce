@@ -22,8 +22,8 @@ public class ProductController {
     }
 
     @PostMapping()
-    public ResponseEntity<ProductDTO> registerProduct(@RequestBody ProductDTO dto) {
-        Product newProduct = productService.register(dto);
+    public ResponseEntity<ProductDTO> registerProduct(@RequestBody ProductDTO productDTO) {
+        Product newProduct = productService.register(productDTO);
         ProductDTO response = ProductConversor.toDTO(newProduct);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
