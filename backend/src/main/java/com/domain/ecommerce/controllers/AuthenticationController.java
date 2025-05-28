@@ -2,8 +2,10 @@ package com.domain.ecommerce.controllers;
 
 import com.domain.ecommerce.models.AuthenticationDTO;
 import com.domain.ecommerce.models.Client;
+import com.domain.ecommerce.models.LoginResponseDTO;
 import com.domain.ecommerce.models.RegisterDTO;
 import com.domain.ecommerce.repositories.ClientRepository;
+import com.domain.ecommerce.services.TokenService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,10 +22,12 @@ public class AuthenticationController {
 
     private final AuthenticationManager authenticationManager;
     private final ClientRepository clientRepository;
+    private final TokenService tokenService;
 
-    AuthenticationController(AuthenticationManager authenticationManager, ClientRepository clientRepository) {
+    AuthenticationController(AuthenticationManager authenticationManager, ClientRepository clientRepository, TokenService tokenService) {
         this.authenticationManager = authenticationManager;
         this.clientRepository = clientRepository;
+        this.tokenService = tokenService;
     }
 
     @PostMapping("/login")
@@ -31,7 +35,8 @@ public class AuthenticationController {
         var usernamePassword = new UsernamePasswordAuthenticationToken(authenticationDTO.email(),
                 authenticationDTO.password());
         var auth = this.authenticationManager.authenticate(usernamePassword);
-        return ResponseEntity.ok().build();
+        var token = this.tokenService.generateToken((Client) auth.getPrincipal());
+        return ResponseEntity.ok(new LoginResponseDTO(token));
     }
 
     @PostMapping("/register")
